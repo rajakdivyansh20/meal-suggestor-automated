@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { AppStoreProvider } from "./context/AppStore";
+import { AppStoreProvider, useAppStore } from "./context/AppStore";
 import Inventory from "./pages/Inventory";
+import BentoCard from "./components/BentoCard";
+import RecipeCard from "./components/RecipeCard";
+import TopNav from "./components/ui/TopNav";
+import PrimaryButton from "./components/PrimaryButton";
+import { buildMealSuggestionPrompt, buildRecipeDetailPrompt } from "./prompts/geminiPrompts";
 
 const MEAL_TYPES = ["Breakfast", "Lunch", "Evening Snack", "Dinner"];
 const MOODS = [
@@ -63,7 +68,8 @@ function setupHourlyCheck(swReg) {
   setInterval(check, 60 * 1000);
 }
 
-export default function App() {
+function AppShell() {
+  const { inventory } = useAppStore();
   const [step, setStep] = useState("setup");
   const [mealType, setMealType] = useState(null);
   const [mood, setMood] = useState(null);
@@ -113,13 +119,29 @@ export default function App() {
       else if (code <= 99) condition = "Stormy";
       if (temp >= 35) condition = "Very Hot";
       else if (temp >= 28 && condition === "Clear") condition = "Hot & Clear";
-      setWeather({ temp, condition });
+      // reverse geocode to get a friendly city/locality name for prompts
+      try {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
+        const geo = await geoRes.json();
+        const city = geo?.address?.city || geo?.address?.town || geo?.address?.village || geo?.address?.state || geo?.address?.country || null;
+        setWeather({ temp, condition, city });
+      } catch {
+        setWeather({ temp, condition });
+      }
     } catch {
       try {
         const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=12.97&longitude=77.59&current=temperature_2m,weathercode&timezone=auto");
         const data = await res.json();
         const temp = Math.round(data.current.temperature_2m);
-        setWeather({ temp, condition: temp >= 35 ? "Very Hot" : "Hot & Clear", fallback: true });
+        // attempt reverse geocode for fallback coordinates
+        try {
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=12.97&lon=77.59&addressdetails=1`);
+          const geo = await geoRes.json();
+          const city = geo?.address?.city || geo?.address?.town || geo?.address?.village || geo?.address?.state || geo?.address?.country || "Bengaluru";
+          setWeather({ temp, condition: temp >= 35 ? "Very Hot" : "Hot & Clear", fallback: true, city });
+        } catch {
+          setWeather({ temp, condition: temp >= 35 ? "Very Hot" : "Hot & Clear", fallback: true });
+        }
       } catch {
         setWeather({ temp: 32, condition: "Hot & Clear", fallback: true });
       }
@@ -151,11 +173,7 @@ export default function App() {
     if (!getKey()) { setShowSettings(true); return; }
     setStep("loading");
     setError(null);
-    const weatherCtx = weather ? `Current weather: ${weather.temp}°C, ${weather.condition}.` : "Weather: Mild day in India.";
-    const prompt = `You are an expert Indian home cook. ${weatherCtx}
-The user wants ${mealType} with a "${mood}" mood/vibe.
-Suggest exactly 4 meal options. Respond ONLY with a valid JSON array (no markdown code blocks, no formatting, just pure JSON text):
-[{"name":"Dish Name","hinglish_name":"Short Hinglish tagline","tags":["tag1","tag2"],"time":"30 min","vibe":"one sentence why this fits today","emoji":"single emoji"}]`;
+    const prompt = buildMealSuggestionPrompt({ mealType, mood, weather, inventory });
     
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
@@ -181,9 +199,7 @@ Suggest exactly 4 meal options. Respond ONLY with a valid JSON array (no markdow
     setSelectedRecipe(dish);
     setRecipeLoading(true);
     setRecipeDetail(null);
-    const prompt = `Complete home-style Indian recipe for "${dish.name}" in Hinglish.
-Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, just pure JSON text):
-{"ingredients":["item with qty"],"steps":["Step 1..."],"tip":"One pro tip in Hinglish","serves":"2 log"}`;
+    const prompt = buildRecipeDetailPrompt(dish.name, weather);
     
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
@@ -206,28 +222,24 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
   const reset = () => { setStep("setup"); setMealType(null); setMood(null); setSuggestions([]); setSelectedRecipe(null); setRecipeDetail(null); setError(null); };
 
   const S = {
-    root: { minHeight: "100vh", backgroundColor: "#FAFAFA", paddingBottom: "110px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#2D2D2D", position: "relative" },
-    header: { backgroundColor: "#FFFFFF", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #EAEAEA", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" },
-    body: { maxWidth: "500px", margin: "0 auto", padding: "24px 16px" },
-    label: { fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#8E8E93", marginBottom: "12px", fontWeight: "600" },
-    card: (active) => ({ width: "100%", background: active ? "#FDF6ED" : "#FFFFFF", border: active ? "2px solid #E28743" : "1px solid #EAEAEA", borderRadius: "12px", padding: "14px 16px", color: "#2D2D2D", cursor: "pointer", transition: "all 0.2s ease", textAlign: "left", boxShadow: active ? "0 4px 12px rgba(226,135,67,0.1)" : "0 2px 4px rgba(0,0,0,0.01)" }),
-    btn: (disabled) => ({ width: "100%", padding: "16px", background: disabled ? "#EAEAEA" : "#E28743", border: "none", borderRadius: "12px", color: disabled ? "#999999" : "#FFFFFF", fontSize: "16px", cursor: disabled ? "not-allowed" : "pointer", fontWeight: "600", transition: "all 0.2s", boxShadow: disabled ? "none" : "0 4px 12px rgba(226,135,67,0.2)" }),
-    ghost: { background: "#FFFFFF", border: "1px solid #EAEAEA", borderRadius: "20px", padding: "6px 14px", color: "#E28743", fontSize: "13px", cursor: "pointer", fontWeight: "500" },
-    bottomNav: { position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "space-around", alignItems: "center", padding: "12px 18px", background: "#FFFFFF", borderTop: "1px solid #EAEAEA", boxShadow: "0 -8px 24px rgba(0,0,0,0.08)", zIndex: 20 },
-    bottomNavButton: { minWidth: "120px", border: "none", background: "transparent", color: "#666666", fontSize: "14px", fontWeight: "700", borderRadius: "16px", padding: "12px 14px", cursor: "pointer", transition: "all 0.2s ease" },
-    bottomNavActive: { color: "#E28743", background: "#FFF3E8", boxShadow: "0 12px 28px rgba(226,135,67,0.16)" },
-    tag: { background: "#F5F5F7", borderRadius: "6px", padding: "3px 8px", fontSize: "12px", color: "#666666", fontWeight: "500" },
-    section: { background: "#FFFFFF", border: "1px solid #EAEAEA", borderRadius: "12px", padding: "18px", marginBottom: "16px" },
+    root: { minHeight: "100vh", backgroundColor: "#F7F7F8", paddingBottom: "130px", fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#111111", position: "relative" },
+    header: { backgroundColor: "#FFFFFF", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #EBEBEB", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" },
+    body: { maxWidth: "560px", margin: "0 auto", padding: "28px 18px" },
+    label: { fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#8E8E93", marginBottom: "12px", fontWeight: "700" },
+    card: (active) => ({ width: "100%", background: active ? "#FFF5EA" : "#FFFFFF", border: active ? "1px solid #E7B188" : "1px solid #EBEBEB", borderRadius: "24px", padding: "18px 18px", color: "#111111", cursor: "pointer", transition: "all 0.2s ease", textAlign: "left", boxShadow: active ? "0 10px 30px rgba(226,135,67,0.12)" : "0 8px 30px rgba(0,0,0,0.04)" }),
+    btn: (disabled) => ({ width: "100%", padding: "16px", background: disabled ? "#EAEAEA" : "#E28743", border: "none", borderRadius: "20px", color: disabled ? "#999999" : "#FFFFFF", fontSize: "16px", cursor: disabled ? "not-allowed" : "pointer", fontWeight: "700", transition: "transform 0.2s ease, box-shadow 0.2s ease", boxShadow: disabled ? "none" : "0 10px 24px rgba(226,135,67,0.18)" }),
+    ghost: { background: "#FFFFFF", border: "1px solid #EBEBEB", borderRadius: "22px", padding: "8px 16px", color: "#E28743", fontSize: "13px", cursor: "pointer", fontWeight: "700", transition: "transform 0.2s ease, box-shadow 0.2s ease" },
+    bottomNav: { position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "space-around", alignItems: "center", padding: "14px 20px", background: "#FFFFFF", borderTop: "1px solid #EBEBEB", boxShadow: "0 -10px 30px rgba(0,0,0,0.06)", zIndex: 20 },
+    bottomNavButton: { minWidth: "120px", border: "none", background: "transparent", color: "#666666", fontSize: "14px", fontWeight: "700", borderRadius: "18px", padding: "12px 16px", cursor: "pointer", transition: "all 0.2s ease" },
+    bottomNavActive: { color: "#E28743", background: "#FFF3E8", boxShadow: "0 12px 28px rgba(226,135,67,0.12)" },
+    tag: { background: "#F5F5F7", borderRadius: "10px", padding: "6px 12px", fontSize: "12px", color: "#666666", fontWeight: "600" },
+    section: { background: "#FFFFFF", border: "1px solid #EBEBEB", borderRadius: "24px", padding: "22px", marginBottom: "18px", boxShadow: "0 10px 30px rgba(0,0,0,0.04)" },
   };
 
-  if (showSettings) return (
-    <AppStoreProvider>
-      <div style={S.root}>
-        <div style={S.header}>
-        <div style={{ fontSize: "18px", color: "#2D2D2D", fontWeight: "600" }}>⚙️ Settings</div>
-        <button onClick={() => setShowSettings(false)} style={S.ghost}>✕ Close</button>
-      </div>
-      <div style={S.body}>
+  if (activeTab === "settings") return (
+    <div style={S.root}>
+      <TopNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <main className="center-pane">
         <div style={S.section}>
           <div style={S.label}>Gemini API Key</div>
           {apiKey ? (
@@ -263,63 +275,38 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
             <button onClick={enableNotifications} style={S.btn(false)}>Enable Notifications</button>
           )}
         </div>
-      </div>
-      <div style={S.bottomNav}>
-        <button type="button" onClick={() => setActiveTab("home")} style={activeTab === "home" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
-          🏠 Home
-        </button>
-        <button type="button" onClick={() => setActiveTab("inventory")} style={activeTab === "inventory" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
-          🛒 Inventory
-        </button>
-      </div>
+      </main>
     </div>
-  </AppStoreProvider>
   );
 
   return (
-    <AppStoreProvider>
-      <div style={S.root}>
-        <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    <div style={S.root}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       
-      <div style={S.header}>
-        <div>
-          <div style={{ fontSize: "20px", fontWeight: "700", color: "#2D2D2D", letterSpacing: "-0.5px" }}>🍽️ Kya Banaye?</div>
-          <div style={{ fontSize: "11px", color: "#8E8E93", fontWeight: "500" }}>Premium AI Meal Suggester</div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ background: "#F5F5F7", borderRadius: "20px", padding: "6px 12px", fontSize: "13px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-            {weatherLoading ? "..." : <>{weatherEmoji(weather?.condition)} {weather?.temp || 32}°C</>}
-          </div>
-          <button onClick={() => setShowSettings(true)} style={{ background: "#F5F5F7", border: "none", borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "16px" }}>
-            ⚙️
-          </button>
-        </div>
-      </div>
+      <TopNav activeTab={activeTab} setActiveTab={setActiveTab} weather={weather} weatherLoading={weatherLoading} />
 
-      <div style={S.body}>
+      <main className="center-pane">
         {activeTab === "inventory" ? (
           <Inventory />
         ) : (
           <>
             {step === "setup" && (
               <div>
-                <div style={{ marginBottom: "24px" }}>
-                  <div style={S.label}>Select Meal</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <BentoCard title="Select Meal" subtitle="Pick the meal type that matches your vibe.">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 {MEAL_TYPES.map((t) => (
                   <button key={t} onClick={() => setMealType(t)} style={S.card(mealType === t)}>
-                    <span style={{ fontSize: "16px", marginRight: "6px" }}>
+                    <span style={{ fontSize: "16px", marginRight: "8px" }}>
                       {t === "Breakfast" ? "🌅" : t === "Lunch" ? "☀️" : t === "Evening Snack" ? "🌇" : "🌙"}
                     </span>
                     <span style={{ fontWeight: "600", fontSize: "14px" }}>{t}</span>
                   </button>
                 ))}
               </div>
-            </div>
+            </BentoCard>
 
-            <div style={{ marginBottom: "24px" }}>
-              <div style={S.label}>Select Mood</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <BentoCard title="Select Mood" subtitle="Choose the mood that feels right for today." style={{ marginTop: "18px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {MOODS.map((m) => (
                   <button key={m.value} onClick={() => setMood(m.value)} style={{ ...S.card(mood === m.value), display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ fontSize: "20px" }}>{m.emoji}</span>
@@ -328,13 +315,13 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
                   </button>
                 ))}
               </div>
-            </div>
+            </BentoCard>
 
-            {error && <div style={{ background: "#FFD6D4", border: "1px solid #FF3B30", borderRadius: "8px", padding: "10px", marginBottom: "14px", color: "#FF3B30", fontSize: "13px", textAlign: "center" }}>{error}</div>}
+            {error && <div style={{ background: "#FFD6D4", border: "1px solid #FF3B30", borderRadius: "12px", padding: "12px", marginTop: "18px", color: "#FF3B30", fontSize: "13px", textAlign: "center" }}>{error}</div>}
 
-            <button onClick={generateSuggestions} disabled={!mealType || !mood} style={S.btn(!mealType || !mood)}>
+            <PrimaryButton disabled={!mealType || !mood} onClick={generateSuggestions} style={{ marginTop: "20px" }}>
               ✨ Suggest Meals
-            </button>
+            </PrimaryButton>
           </div>
         )}
 
@@ -355,18 +342,9 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
               <button onClick={reset} style={S.ghost}>Change</button>
             </div>
             
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {suggestions.map((dish, i) => (
-                <button key={i} onClick={() => fetchRecipe(dish)} style={{ ...S.card(false), display: "flex", alignItems: "center", gap: "14px" }}>
-                  <div style={{ fontSize: "28px", width: "46px", height: "46px", display: "flex", alignItems: "center", justifyContent: "center", background: "#F5F5F7", borderRadius: "10px" }}>{dish.emoji}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "16px", fontWeight: "600" }}>{dish.name}</div>
-                    <div style={{ fontSize: "13px", color: "#666666", marginTop: "2px" }}>{dish.vibe}</div>
-                    <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
-                      <span style={S.tag}>⏱️ {dish.time}</span>
-                    </div>
-                  </div>
-                </button>
+                <RecipeCard key={i} dish={dish} onSelect={fetchRecipe} />
               ))}
             </div>
           </div>
@@ -417,16 +395,15 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
         )}
           </>
         )}
-      </div>
-      <div style={S.bottomNav}>
-        <button type="button" onClick={() => setActiveTab("home")} style={activeTab === "home" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
-          🏠 Home
-        </button>
-        <button type="button" onClick={() => setActiveTab("inventory")} style={activeTab === "inventory" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
-          🛒 Inventory
-        </button>
-      </div>
+      </main>
     </div>
-  </AppStoreProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AppStoreProvider>
+      <AppShell />
+    </AppStoreProvider>
   );
 }

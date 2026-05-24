@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useAppStore } from "../context/AppStore";
+import BentoCard from "../components/BentoCard";
+import PrimaryButton from "../components/PrimaryButton";
 
 export default function Inventory() {
   const { inventory, setInventory } = useAppStore();
@@ -36,47 +38,46 @@ export default function Inventory() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.topSection}>
-        <div style={styles.heading}>Smart Kitchen Inventory</div>
-        <div style={styles.subtext}>
-          Add the ingredients you already have and let Kya Banaye help you discover meals that make the most of your pantry.
-        </div>
-
-        <div style={styles.inputRow}>
+    <div className="inventory-page">
+      <BentoCard
+        title="Smart Kitchen Inventory"
+        subtitle="Add what you already have and get recipe suggestions that feel premium and practical."
+        className="inventory-card"
+      >
+        <div className="inventory-input-row">
           <input
             type="text"
             placeholder="Add an ingredient like Paneer or Tomato"
             value={ingredientInput}
             onChange={(e) => setIngredientInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addIngredient()}
-            style={styles.input}
+            className="text-input"
           />
-          <button type="button" onClick={addIngredient} style={styles.addButton}>
+          <PrimaryButton className="add-button" onClick={addIngredient}>
             Add
-          </button>
+          </PrimaryButton>
         </div>
 
-        <div style={styles.pillGrid}>
+        <div className="pill-grid">
           {inventory.length === 0 ? (
-            <div style={{ color: "#999999", fontSize: "14px" }}>No ingredients yet. Start typing to build your inventory.</div>
+            <div className="empty-state">No ingredients yet. Start typing to build your inventory.</div>
           ) : (
             inventory.map((item) => (
-              <div key={item} style={styles.pill}>
+              <div key={item} className="pill-chip">
                 {item}
-                <button type="button" aria-label={`Remove ${item}`} onClick={() => removeIngredient(item)} style={styles.removeButton}>
+                <button type="button" aria-label={`Remove ${item}`} onClick={() => removeIngredient(item)} className="remove-pill-button">
                   ✕
                 </button>
               </div>
             ))
           )}
         </div>
-      </div>
+      </BentoCard>
 
-      <div style={styles.actionCard}>
-        <button type="button" style={styles.actionButton} onClick={() => {}}>
+      <div className="action-card">
+        <PrimaryButton className="suggest-button" onClick={() => {}}>
           ✨ Suggest Meals with these
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   );
