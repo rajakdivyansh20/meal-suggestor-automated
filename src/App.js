@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { AppStoreProvider, useAppStore } from "./context/AppStore";
 import Inventory from "./pages/Inventory";
+import GroceryList from "./pages/GroceryList";
+import Favorites from "./pages/Favorites";
 import BentoCard from "./components/BentoCard";
 import RecipeCard from "./components/RecipeCard";
 import RecipeDetail from "./components/RecipeDetail";
@@ -288,7 +290,11 @@ function AppShell() {
       <TopNav activeTab={activeTab} setActiveTab={setActiveTab} weather={weather} weatherLoading={weatherLoading} />
 
       <main className="center-pane">
-        {activeTab === "inventory" ? (
+        {activeTab === "inventory/grocery" ? (
+          <GroceryList />
+        ) : activeTab === "favorites" ? (
+          <Favorites />
+        ) : activeTab === "inventory" ? (
           <Inventory />
         ) : activeTab === "planner" ? (
           <Planner weather={weather} />

@@ -4,6 +4,7 @@ export default function TopNav({ activeTab, setActiveTab, weather, weatherLoadin
   const label = {
     home: 'Home',
     inventory: 'Inventory',
+    'inventory/grocery': 'Grocery',
     planner: 'Planner',
     favorites: 'Favorites',
     settings: 'Settings',
@@ -26,7 +27,8 @@ export default function TopNav({ activeTab, setActiveTab, weather, weatherLoadin
             aria-label="Navigate"
           >
             <option value="home">🍽️ Home</option>
-            <option value="inventory">🛒 Inventory</option>
+            <option value="inventory">📦 Inventory</option>
+            <option value="inventory/grocery">🧾 Grocery</option>
             <option value="planner">📅 Planner</option>
             <option value="favorites">❤️ Favorites</option>
             <option value="settings">⚙️ Settings</option>

@@ -64,7 +64,7 @@ export default function Planner({ weather }) {
     if (!weeklyPlan) return;
     const rawItems = weeklyPlan.flatMap((day) => day.ingredients || []);
     const cleaned = rawItems
-      .map((item) => item.trim())
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
       .filter((item) => item.length > 0);
     const normalizedMap = new Map();
     cleaned.forEach((item) => {
@@ -72,8 +72,16 @@ export default function Planner({ weather }) {
       if (!normalizedMap.has(key)) normalizedMap.set(key, item);
     });
     const uniqueItems = Array.from(normalizedMap.values());
-    const existing = new Set(groceryList.map((item) => item.trim().toLowerCase()));
-    const toAdd = uniqueItems.filter((item) => !existing.has(item.toLowerCase()));
+    const existing = new Set(groceryList.map((item) => item.name.toLowerCase()));
+    const toAdd = uniqueItems
+      .filter((item) => !existing.has(item.toLowerCase()))
+      .map((item) => ({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: item,
+        category: "recipe",
+        source: "Weekly Plan",
+        checked: false,
+      }));
     if (toAdd.length > 0) {
       setGroceryList([...groceryList, ...toAdd]);
     }

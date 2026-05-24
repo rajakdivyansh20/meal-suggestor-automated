@@ -479,6 +479,431 @@ strong {
   max-width: 580px;
   padding: 20px 16px;
   min-height: calc(100vh - 160px);
+  font-size: 0.95rem;
+}
+
+.pantry-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px 100px;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.pantry-input {
+  width: 100%;
+  border-radius: 20px;
+  border: 1px solid #EBEBEB;
+  background: #FFFFFF;
+  padding: 12px 14px;
+}
+
+.pantry-select {
+  width: 100%;
+  border-radius: 20px;
+  border: 1px solid #EBEBEB;
+  background: #FFFFFF;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+
+.pantry-header-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.category-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.category-heading {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 6px;
+}
+
+.category-subtext {
+  font-size: 0.88rem;
+  color: #666666;
+}
+
+.category-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.empty-section-note {
+  padding: 16px;
+  border-radius: 20px;
+  background: #FAFAFA;
+  border: 1px dashed #EBEBEB;
+  color: #8E8E93;
+  font-size: 0.92rem;
+}
+
+.pantry-input,
+.pantry-select {
+  font-size: 0.92rem;
+}
+
+.select-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #D9D9D9;
+  background: #FFFFFF;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.select-dot.selected {
+  background: #E28743;
+  border-color: #E28743;
+}
+
+.pantry-row.selected {
+  background: rgba(226, 135, 67, 0.08);
+}
+
+.pantry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: #FAFAFA;
+  border: 1px solid #F1F1F1;
+}
+
+.pantry-row.checked {
+  opacity: 0.65;
+}
+
+.pantry-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pantry-content {
+  min-width: 0;
+}
+
+.pantry-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.store-pill {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid #EBEBEB;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #666666;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.deal-pill {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255,255,255,0.85);
+}
+
+.deal-pill:hover {
+  transform: translateY(-1px);
+}
+
+.deal-pill.blinkit {
+  color: #2F855A;
+  background: rgba(47,133,90,0.08);
+}
+
+.deal-pill.amazon {
+  color: #B4690E;
+  background: rgba(180,105,14,0.08);
+}
+
+.grocery-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #D9D9D9;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.grocery-checkbox.on {
+  border-color: #E28743;
+  background: #E28743;
+}
+
+.grocery-text {
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.grocery-source {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #8E8E93;
+  margin-top: 4px;
+}
+
+@media (max-width: 760px) {
+  .pantry-action-row {
+    grid-template-columns: 1fr;
+  }
+  .pantry-actions {
+    justify-content: flex-start;
+  }
+}
+
+.bento-card {
+  background: #FFFFFF;
+  border: 1px solid #EBEBEB;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+  padding: 20px;
+}
+
+.bento-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.bento-card-subtitle {
+  margin: 8px 0 0;
+  color: #666666;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.primary-button {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #E28743;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 10px 22px rgba(226, 135, 67, 0.14);
+  border: none;
+}
+
+.center-pane {
+  margin: 84px auto 120px;
+  max-width: 580px;
+  padding: 18px 14px;
+  min-height: calc(100vh - 160px);
+  font-size: 0.92rem;
+}
+
+.pantry-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px 88px;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.pantry-input,
+.pantry-select {
+  font-size: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid #E7E7E7;
+  background: #FFFFFF;
+  padding: 11px 12px;
+}
+
+.pantry-header-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.category-header-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.category-heading {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 4px;
+}
+
+.category-subtext {
+  font-size: 0.82rem;
+  color: #7A7A7A;
+}
+
+.empty-section-note {
+  padding: 14px;
+  border-radius: 18px;
+  background: #FAFAFA;
+  border: 1px dashed #EAEAEA;
+  color: #8E8E93;
+  font-size: 0.88rem;
+}
+
+.select-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #D9D9D9;
+  background: #FFFFFF;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.select-dot.selected {
+  background: #E28743;
+  border-color: #E28743;
+}
+
+.pantry-row.selected {
+  background: rgba(226, 135, 67, 0.08);
+}
+
+.pantry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #F1F1F1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.pantry-row.checked {
+  opacity: 0.7;
+}
+
+.pantry-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pantry-content {
+  min-width: 0;
+}
+
+.pantry-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.store-pill {
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #F1F1F1;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #6B6B6B;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.deal-pill {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255,255,255,0.95);
+}
+
+.deal-pill:hover {
+  transform: translateY(-0.5px);
+}
+
+.deal-pill.blinkit {
+  color: #2F855A;
+  background: rgba(47,133,90,0.1);
+}
+
+.deal-pill.amazon {
+  color: #B4690E;
+  background: rgba(180,105,14,0.1);
+}
+
+.grocery-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #D9D9D9;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.grocery-checkbox.on {
+  border-color: #E28743;
+  background: #E28743;
+}
+
+.grocery-text {
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.grocery-source {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: #8E8E93;
+  margin-top: 2px;
+}
+
+.ghost-text-btn {
+  background: transparent;
+  border: none;
+  color: #7A7A7A;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 760px) {
+  .pantry-action-row {
+    grid-template-columns: 1fr;
+  }
+  .pantry-actions {
+    justify-content: flex-start;
+  }
 }
 
 .recipe-detail-card {
@@ -634,3 +1059,57 @@ strong {
     justify-content: space-between;
   }
 }
+
+/* Grocery list */
+.grocery-page { display: flex; flex-direction: column; gap: 12px; }
+.grocery-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: #FFFFFF; border: 1px solid #EBEBEB; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+.grocery-checkbox { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #E6E6E6; background: transparent; flex: 0 0 22px; cursor: pointer; transition: background 0.18s ease, border-color 0.18s ease; }
+.grocery-checkbox.on { background: var(--accent); border-color: var(--accent); box-shadow: 0 6px 16px rgba(226,135,67,0.14); }
+.grocery-copy { flex: 1; }
+.grocery-text { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+.grocery-item.checked .grocery-text { text-decoration: line-through; opacity: 0.55; font-weight: 700; }
+.ghost-text-btn { background: transparent; border: none; color: var(--accent); font-weight: 800; font-size: 0.95rem; cursor: pointer; }
+
+/* Favorites */
+.favorites-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.favorite-card { position: relative; }
+.heart-unsave { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: 1px solid #EBEBEB; border-radius: 999px; padding: 8px 10px; font-weight: 700; color: var(--accent); cursor: pointer; }
+
+@media (max-width: 760px) {
+  .favorites-grid { grid-template-columns: 1fr; }
+}
+
+/* Smart Pantry Hub */
+.pantry-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 120px;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+}
+.pantry-input { width: 100%; }
+.pantry-select { width: 100%; border-radius: 20px; border: 1px solid #EBEBEB; background: #FFFFFF; padding: 12px 14px; font-weight: 700; }
+.pantry-add-button { min-width: 100px; }
+.category-section { background: #FFFFFF; border: 1px solid #EBEBEB; border-radius: 24px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 16px; }
+.category-heading { font-size: 1rem; font-weight: 800; margin-bottom: 14px; color: #111111; }
+.category-list { display: grid; gap: 12px; }
+.pantry-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-radius: 22px; background: #FAFAFA; border: 1px solid #F1F1F1; }
+.pantry-row.checked { opacity: 0.65; }
+.pantry-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pantry-content { min-width: 0; }
+.grocery-text { font-size: 1rem; font-weight: 700; color: #111111; word-break: break-word; }
+.grocery-source { font-size: 0.82rem; font-style: italic; color: #8E8E93; margin-top: 4px; }
+.pantry-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.deal-pill { border: none; border-radius: 999px; padding: 8px 12px; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.85); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.deal-pill:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.08); }
+.deal-pill.blinkit { color: #2F855A; background: rgba(47,133,90,0.08); }
+.deal-pill.amazon { color: #B4690E; background: rgba(180,105,14,0.08); }
+.grocery-checkbox { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #D9D9D9; background: transparent; flex-shrink: 0; cursor: pointer; }
+.grocery-checkbox.on { border-color: #E28743; background: #E28743; }
+.pantry-row.checked .grocery-text { text-decoration: line-through; }
+.pantry-row.checked .grocery-source { opacity: 0.7; }
+@media (max-width: 760px) {
+  .pantry-action-row { grid-template-columns: 1fr; }
+  .pantry-actions { justify-content: flex-start; }
+}
+
