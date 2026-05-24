@@ -3,6 +3,7 @@ import { AppStoreProvider, useAppStore } from "./context/AppStore";
 import Inventory from "./pages/Inventory";
 import BentoCard from "./components/BentoCard";
 import RecipeCard from "./components/RecipeCard";
+import RecipeDetail from "./components/RecipeDetail";
 import TopNav from "./components/ui/TopNav";
 import PrimaryButton from "./components/PrimaryButton";
 import { buildMealSuggestionPrompt, buildRecipeDetailPrompt } from "./prompts/geminiPrompts";
@@ -353,43 +354,12 @@ function AppShell() {
         {step === "results" && selectedRecipe && (
           <div>
             <button onClick={() => { setSelectedRecipe(null); setRecipeDetail(null); }} style={{ ...S.ghost, marginBottom: "20px" }}>← Back to options</button>
-            
-            <div style={{ ...S.section, textAlign: "center", background: "#FDF6ED", borderColor: "#F5E6D3" }}>
-              <div style={{ fontSize: "40px" }}>{selectedRecipe.emoji}</div>
-              <div style={{ fontSize: "22px", fontWeight: "700", marginTop: "8px" }}>{selectedRecipe.name}</div>
-              <div style={{ fontSize: "14px", color: "#666666", fontStyle: "italic" }}>{selectedRecipe.hinglish_name}</div>
-            </div>
-
-            {recipeLoading && <div style={{ textAlign: "center", padding: "40px 0" }}><div style={{ fontSize: "32px", animation: "spin 1.5s linear infinite" }}>🥘</div></div>}
-            
-            {recipeDetail && !recipeDetail.error && (
-              <div>
-                <div style={S.section}>
-                  <div style={S.label}>Ingredients ({recipeDetail.serves})</div>
-                  {recipeDetail.ingredients?.map((ing, i) => (
-                    <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #F5F5F7", color: "#48484A", fontSize: "14px" }}>
-                      • {ing}
-                    </div>
-                  ))}
-                </div>
-                
-                <div style={S.section}>
-                  <div style={S.label}>Steps to Cook</div>
-                  {recipeDetail.steps?.map((s, i) => (
-                    <div key={i} style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-                      <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#E28743", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold", flexShrink: 0 }}>{i + 1}</div>
-                      <div style={{ color: "#48484A", fontSize: "14px", lineHeight: "1.5" }}>{s}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {recipeDetail.tip && (
-                  <div style={{ background: "#F5F5F7", borderRadius: "12px", padding: "14px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                    <span>💡</span>
-                    <div style={{ fontSize: "14px", color: "#48484A" }}><strong>Chef's Tip:</strong> {recipeDetail.tip}</div>
-                  </div>
-                )}
-              </div>
+            {recipeLoading ? (
+              <div style={{ textAlign: "center", padding: "40px 0" }}><div style={{ fontSize: "32px", animation: "spin 1.5s linear infinite" }}>🥘</div></div>
+            ) : (
+              recipeDetail && !recipeDetail.error && (
+                <RecipeDetail dish={selectedRecipe} recipeDetail={recipeDetail} />
+              )
             )}
           </div>
         )}
