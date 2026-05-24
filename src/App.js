@@ -74,7 +74,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [notifStatus, setNotifStatus] = useState("unknown");
   const [showSettings, setShowSettings] = useState(false);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem("claude_api_key") || "");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("gemini_api_key") || "");
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [swReg, setSwReg] = useState(null);
 
@@ -135,13 +135,13 @@ export default function App() {
   };
 
   const saveApiKey = () => {
-    localStorage.setItem("claude_api_key", apiKeyInput);
+    localStorage.setItem("gemini_api_key", apiKeyInput);
     setApiKey(apiKeyInput);
     setApiKeyInput("");
     setShowSettings(false);
   };
 
-  const getKey = () => apiKey || process.env.REACT_APP_CLAUDE_KEY || "";
+  const getKey = () => apiKey || process.env.REACT_APP_GEMINI_KEY || "";
 
   const generateSuggestions = async () => {
     if (!mealType || !mood) return;
@@ -151,18 +151,22 @@ export default function App() {
     const weatherCtx = weather ? `Current weather: ${weather.temp}°C, ${weather.condition}.` : "Weather: Mild day in India.";
     const prompt = `You are an expert Indian home cook. ${weatherCtx}
 The user wants ${mealType} with a "${mood}" mood/vibe.
-Suggest exactly 4 meal options. Respond ONLY with valid JSON array (no markdown):
+Suggest exactly 4 meal options. Respond ONLY with a valid JSON array (no markdown code blocks, no formatting, just pure JSON text):
 [{"name":"Dish Name","hinglish_name":"Short Hinglish tagline","tags":["tag1","tag2"],"time":"30 min","vibe":"one sentence why this fits today","emoji":"single emoji"}]`;
+    
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": getKey(), "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
-      const text = data.content?.find((b) => b.type === "text")?.text || "[]";
-      setSuggestions(JSON.parse(text.replace(/```json|```/g, "").trim()));
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+      setSuggestions(JSON.parse(text.trim()));
       setStep("results");
     } catch (e) {
       setError("API error: Try again");
@@ -175,17 +179,21 @@ Suggest exactly 4 meal options. Respond ONLY with valid JSON array (no markdown)
     setRecipeLoading(true);
     setRecipeDetail(null);
     const prompt = `Complete home-style Indian recipe for "${dish.name}" in Hinglish.
-Respond ONLY with valid JSON (no markdown):
+Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, just pure JSON text):
 {"ingredients":["item with qty"],"steps":["Step 1..."],"tip":"One pro tip in Hinglish","serves":"2 log"}`;
+    
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getKey()}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": getKey(), "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        }),
       });
       const data = await res.json();
-      const text = data.content?.find((b) => b.type === "text")?.text || "{}";
-      setRecipeDetail(JSON.parse(text.replace(/```json|```/g, "").trim()));
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+      setRecipeDetail(JSON.parse(text.trim()));
     } catch {
       setRecipeDetail({ error: true });
     }
@@ -194,7 +202,6 @@ Respond ONLY with valid JSON (no markdown):
 
   const reset = () => { setStep("setup"); setMealType(null); setMood(null); setSuggestions([]); setSelectedRecipe(null); setRecipeDetail(null); setError(null); };
 
-  // ─── Clean Aesthetic Light Theme Styles ──────────────────────────────────
   const S = {
     root: { minHeight: "100vh", backgroundColor: "#FAFAFA", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#2D2D2D", position: "relative" },
     header: { backgroundColor: "#FFFFFF", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #EAEAEA", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" },
@@ -215,22 +222,22 @@ Respond ONLY with valid JSON (no markdown):
       </div>
       <div style={S.body}>
         <div style={S.section}>
-          <div style={S.label}>Claude API Key</div>
+          <div style={S.label}>Gemini API Key</div>
           {apiKey ? (
             <div>
-              <div style={{ color: "#34C759", fontSize: "14px", marginBottom: "12px", fontWeight: "500" }}>✅ API Key saved successfully</div>
-              <button onClick={() => { localStorage.removeItem("claude_api_key"); setApiKey(""); }} style={{ ...S.ghost, color: "#FF3B30", borderColor: "#FFD6D4" }}>Remove Key</button>
+              <div style={{ color: "#34C759", fontSize: "14px", marginBottom: "12px", fontWeight: "500" }}>✅ Gemini API Key Saved</div>
+              <button onClick={() => { localStorage.removeItem("gemini_api_key"); setApiKey(""); }} style={{ ...S.ghost, color: "#FF3B30", borderColor: "#FFD6D4" }}>Remove Key</button>
             </div>
           ) : (
             <div>
               <input
                 type="password"
-                placeholder="sk-ant-..."
+                placeholder="AIzaSy..."
                 value={apiKeyInput}
                 onChange={(e) => setApiKeyInput(e.target.value)}
                 style={{ width: "100%", padding: "12px", background: "#F5F5F7", border: "1px solid #EAEAEA", borderRadius: "8px", fontSize: "14px", marginBottom: "12px", boxSizing: "border-box" }}
               />
-              <button onClick={saveApiKey} disabled={!apiKeyInput} style={S.btn(!apiKeyInput)}>Save Key</button>
+              <button onClick={saveApiKey} disabled={!apiKeyInput} style={S.btn(!apiKeyInput)}>Save Gemini Key</button>
             </div>
           )}
         </div>
@@ -239,7 +246,7 @@ Respond ONLY with valid JSON (no markdown):
           <div style={S.label}>Meal Reminders</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
             {NOTIFICATION_SCHEDULE.map((s) => (
-              <div key={s.label} style={{ display: "flex", alignItems: "center", justifyBetween: "space-between", color: "#48484A", fontSize: "14px" }}>
+              <div key={s.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "#48484A", fontSize: "14px" }}>
                 <span style={{ marginRight: "8px" }}>{s.emoji} {s.label}</span>
                 <span style={{ marginLeft: "auto", ...S.tag }}>{s.hour}:00 AM/PM</span>
               </div>
@@ -301,6 +308,8 @@ Respond ONLY with valid JSON (no markdown):
                 ))}
               </div>
             </div>
+
+            {error && <div style={{ background: "#FFD6D4", border: "1px solid #FF3B30", borderRadius: "8px", padding: "10px", marginBottom: "14px", color: "#FF3B30", fontSize: "13px", textAlign: "center" }}>{error}</div>}
 
             <button onClick={generateSuggestions} disabled={!mealType || !mood} style={S.btn(!mealType || !mood)}>
               ✨ Suggest Meals
