@@ -353,6 +353,126 @@ strong {
 .weather-headline { font-weight: 800; color: var(--text-primary); font-size: 14px; }
 .weather-subtitle { font-size: 12px; color: #8E8E93; margin-top: 2px; }
 
+/* Planner page */
+.planner-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.toast-message {
+  position: sticky;
+  top: 94px;
+  z-index: 50;
+  margin: 0 auto 10px;
+  max-width: 580px;
+  background: #34c759;
+  color: #ffffff;
+  border-radius: 18px;
+  padding: 14px 18px;
+  text-align: center;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.planner-header-card {
+  padding: 24px;
+}
+
+.planner-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.planner-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #111111;
+}
+
+.planner-select {
+  width: 220px;
+  border-radius: 18px;
+  border: 1px solid #EBEBEB;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  color: #111111;
+  font-weight: 700;
+}
+
+.planner-error {
+  margin-top: 16px;
+  color: #D63A4C;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.planner-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.planner-day-card {
+  background: #FFFFFF;
+  border: 1px solid #EBEBEB;
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+}
+
+.planner-day-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 10px;
+}
+
+.planner-dish-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.planner-vibe {
+  font-size: 0.95rem;
+  color: #666666;
+  line-height: 1.5;
+}
+
+.planner-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.planner-add-button {
+  width: 100%;
+  max-width: 420px;
+}
+
+@media (max-width: 780px) {
+  .planner-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .planner-select {
+    width: 100%;
+  }
+}
+
 /* Center pane */
 .center-pane {
   margin: 84px auto 120px; /* leave space for top nav */

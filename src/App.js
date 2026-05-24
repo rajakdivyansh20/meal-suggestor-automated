@@ -4,6 +4,7 @@ import Inventory from "./pages/Inventory";
 import BentoCard from "./components/BentoCard";
 import RecipeCard from "./components/RecipeCard";
 import RecipeDetail from "./components/RecipeDetail";
+import Planner from "./pages/Planner";
 import TopNav from "./components/ui/TopNav";
 import PrimaryButton from "./components/PrimaryButton";
 import { buildMealSuggestionPrompt, buildRecipeDetailPrompt } from "./prompts/geminiPrompts";
@@ -289,6 +290,8 @@ function AppShell() {
       <main className="center-pane">
         {activeTab === "inventory" ? (
           <Inventory />
+        ) : activeTab === "planner" ? (
+          <Planner weather={weather} />
         ) : (
           <>
             {step === "setup" && (
