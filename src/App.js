@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { AppStoreProvider } from "./context/AppStore";
+import Inventory from "./pages/Inventory";
 
 const MEAL_TYPES = ["Breakfast", "Lunch", "Evening Snack", "Dinner"];
 const MOODS = [
@@ -74,6 +76,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [notifStatus, setNotifStatus] = useState("unknown");
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
   const [apiKey, setApiKey] = useState(() => localStorage.getItem("gemini_api_key") || "");
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [swReg, setSwReg] = useState(null);
@@ -203,20 +206,24 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
   const reset = () => { setStep("setup"); setMealType(null); setMood(null); setSuggestions([]); setSelectedRecipe(null); setRecipeDetail(null); setError(null); };
 
   const S = {
-    root: { minHeight: "100vh", backgroundColor: "#FAFAFA", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#2D2D2D", position: "relative" },
+    root: { minHeight: "100vh", backgroundColor: "#FAFAFA", paddingBottom: "110px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#2D2D2D", position: "relative" },
     header: { backgroundColor: "#FFFFFF", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #EAEAEA", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" },
     body: { maxWidth: "500px", margin: "0 auto", padding: "24px 16px" },
     label: { fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase", color: "#8E8E93", marginBottom: "12px", fontWeight: "600" },
     card: (active) => ({ width: "100%", background: active ? "#FDF6ED" : "#FFFFFF", border: active ? "2px solid #E28743" : "1px solid #EAEAEA", borderRadius: "12px", padding: "14px 16px", color: "#2D2D2D", cursor: "pointer", transition: "all 0.2s ease", textAlign: "left", boxShadow: active ? "0 4px 12px rgba(226,135,67,0.1)" : "0 2px 4px rgba(0,0,0,0.01)" }),
     btn: (disabled) => ({ width: "100%", padding: "16px", background: disabled ? "#EAEAEA" : "#E28743", border: "none", borderRadius: "12px", color: disabled ? "#999999" : "#FFFFFF", fontSize: "16px", cursor: disabled ? "not-allowed" : "pointer", fontWeight: "600", transition: "all 0.2s", boxShadow: disabled ? "none" : "0 4px 12px rgba(226,135,67,0.2)" }),
     ghost: { background: "#FFFFFF", border: "1px solid #EAEAEA", borderRadius: "20px", padding: "6px 14px", color: "#E28743", fontSize: "13px", cursor: "pointer", fontWeight: "500" },
+    bottomNav: { position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "space-around", alignItems: "center", padding: "12px 18px", background: "#FFFFFF", borderTop: "1px solid #EAEAEA", boxShadow: "0 -8px 24px rgba(0,0,0,0.08)", zIndex: 20 },
+    bottomNavButton: { minWidth: "120px", border: "none", background: "transparent", color: "#666666", fontSize: "14px", fontWeight: "700", borderRadius: "16px", padding: "12px 14px", cursor: "pointer", transition: "all 0.2s ease" },
+    bottomNavActive: { color: "#E28743", background: "#FFF3E8", boxShadow: "0 12px 28px rgba(226,135,67,0.16)" },
     tag: { background: "#F5F5F7", borderRadius: "6px", padding: "3px 8px", fontSize: "12px", color: "#666666", fontWeight: "500" },
     section: { background: "#FFFFFF", border: "1px solid #EAEAEA", borderRadius: "12px", padding: "18px", marginBottom: "16px" },
   };
 
   if (showSettings) return (
-    <div style={S.root}>
-      <div style={S.header}>
+    <AppStoreProvider>
+      <div style={S.root}>
+        <div style={S.header}>
         <div style={{ fontSize: "18px", color: "#2D2D2D", fontWeight: "600" }}>⚙️ Settings</div>
         <button onClick={() => setShowSettings(false)} style={S.ghost}>✕ Close</button>
       </div>
@@ -257,12 +264,22 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
           )}
         </div>
       </div>
+      <div style={S.bottomNav}>
+        <button type="button" onClick={() => setActiveTab("home")} style={activeTab === "home" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
+          🏠 Home
+        </button>
+        <button type="button" onClick={() => setActiveTab("inventory")} style={activeTab === "inventory" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
+          🛒 Inventory
+        </button>
+      </div>
     </div>
+  </AppStoreProvider>
   );
 
   return (
-    <div style={S.root}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    <AppStoreProvider>
+      <div style={S.root}>
+        <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       
       <div style={S.header}>
         <div>
@@ -280,10 +297,14 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
       </div>
 
       <div style={S.body}>
-        {step === "setup" && (
-          <div>
-            <div style={{ marginBottom: "24px" }}>
-              <div style={S.label}>Select Meal</div>
+        {activeTab === "inventory" ? (
+          <Inventory />
+        ) : (
+          <>
+            {step === "setup" && (
+              <div>
+                <div style={{ marginBottom: "24px" }}>
+                  <div style={S.label}>Select Meal</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                 {MEAL_TYPES.map((t) => (
                   <button key={t} onClick={() => setMealType(t)} style={S.card(mealType === t)}>
@@ -394,7 +415,18 @@ Respond ONLY with a valid JSON object (no markdown code blocks, no formatting, j
             )}
           </div>
         )}
+          </>
+        )}
+      </div>
+      <div style={S.bottomNav}>
+        <button type="button" onClick={() => setActiveTab("home")} style={activeTab === "home" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
+          🏠 Home
+        </button>
+        <button type="button" onClick={() => setActiveTab("inventory")} style={activeTab === "inventory" ? { ...S.bottomNavButton, ...S.bottomNavActive } : S.bottomNavButton}>
+          🛒 Inventory
+        </button>
       </div>
     </div>
+  </AppStoreProvider>
   );
 }
